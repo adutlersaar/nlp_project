@@ -18,7 +18,7 @@ def model_init():
     return AutoModelForSequenceClassification.from_pretrained("bert-base-cased", num_labels=2)
 
 
-def train(train_df, test_df):
+def train(train_df, test_df, output_dir='bert-fine-tuned'):
     trainer = Trainer(
         model_init=model_init,
         args=TrainingArguments(output_dir="bert_trainer", evaluation_strategy="epoch"),
@@ -27,7 +27,7 @@ def train(train_df, test_df):
         compute_metrics=compute_accuracy,
     )
     trainer.train()
-    trainer.save_model('bert_fine_tuned')
+    trainer.save_model(output_dir)
 
 
 if __name__ == '__main__':

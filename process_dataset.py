@@ -1,3 +1,4 @@
+import csv
 import pickle
 
 from sklearn.model_selection import train_test_split
@@ -34,7 +35,7 @@ def apply_augmentations(df):
         df,
         process_augmentation(df, lambda x: filter_paraphrase(bart_paraphrase(x)), 'bart'),
         process_augmentation(df, lambda x: filter_paraphrase(t5_paraphrase(x)), 't5')
-    ])
+    ]).shuffle()
 
 
 def process_augmentation(df, aug_func, name):
@@ -48,7 +49,13 @@ def filter_paraphrase(x):
     return x[:2]
 
 
+def save_tsv(df, csv_path):
+    # used for bertattack
+    df[['text', 'label']].to_csv(csv_path, sep="\t", index=False, header=False, quoting=csv.QUOTE_NONE, escapechar='\n')
+
+
 if __name__ == '__main__':
     train_df, test_df = process_dataset('parler_annotated_data.csv')
-    train_df.to_csv('train.csv')
+    train_df[['text', 'label']].to_csv('aug_train.csv')
+    save_tsv(train_df[train_df['is_augmentation'] == 'Original'], 'train.tsv')
     test_df.to_csv('test.csv')

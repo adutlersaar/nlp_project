@@ -424,33 +424,8 @@ def dump_features(features, output):
     print('finished dump')
 
 
-def run_attack():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", type=str, help="./data/xxx")
-    parser.add_argument("--mlm_path", type=str, help="xxx mlm")
-    parser.add_argument("--tgt_path", type=str, help="xxx classifier")
-
-    parser.add_argument("--output_dir", type=str, help="train file")
-    parser.add_argument("--use_sim_mat", type=int, help='whether use cosine_similarity to filter out atonyms')
-    parser.add_argument("--start", type=int, help="start step, for multi-thread process")
-    parser.add_argument("--end", type=int, help="end step, for multi-thread process")
-    parser.add_argument("--num_label", type=int, )
-    parser.add_argument("--use_bpe", type=int, )
-    parser.add_argument("--k", type=int, )
-    parser.add_argument("--threshold_pred_score", type=float, )
-
-    args = parser.parse_args()
-    data_path = str(args.data_path)
-    mlm_path = str(args.mlm_path)
-    tgt_path = str(args.tgt_path)
-    output_dir = str(args.output_dir)
-    num_label = args.num_label
-    use_bpe = args.use_bpe
-    k = args.k
-    start = args.start
-    end = args.end
-    threshold_pred_score = args.threshold_pred_score
-
+def run_attack(data_path, mlm_path, tgt_path, output_dir='bertattack_output', num_label=2, use_bpe=None, k=50,
+               start=None, end=None, threshold_pred_score=0, use_sim_mat=None):
     print('start process')
 
     tokenizer_mlm = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
@@ -466,7 +441,7 @@ def run_attack():
     features = get_data_cls(data_path)
     print('loading sim-embed')
 
-    if args.use_sim_mat == 1:
+    if use_sim_mat == 1:
         cos_mat, w2i, i2w = get_sim_embed('data_defense/counter-fitted-vectors.txt',
                                           'data_defense/cos_sim_counter_fitting.npy')
     else:
@@ -497,4 +472,4 @@ def run_attack():
 
 
 if __name__ == '__main__':
-    run_attack()
+    run_attack('train.tsv', 'bert-base-uncased', 'bert-fine-tuned')
