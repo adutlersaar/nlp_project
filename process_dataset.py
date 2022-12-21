@@ -1,8 +1,10 @@
+import pickle
+
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from paraphrase import bart_paraphrase, t5_paraphrase
 from tqdm.auto import tqdm
 tqdm.pandas()
-from paraphrase import bart_paraphrase, t5_paraphrase
 
 
 def process_dataset(csv_file, test_size=0.2, num_rows=None):
@@ -36,10 +38,17 @@ def apply_augmentations(df):
 
 
 def process_augmentation(df, aug_func, name):
-    aug_df = df['text'].progress_map(aug_func).explode().reset_index().join(df[['label']], on='index')[['text', 'label']]
+    aug_df = df['text'].progress_map(aug_func).explode().reset_index().join(df[['label']], on='index')[
+        ['text', 'label']]
     aug_df['is_augmentation'] = name
     return aug_df.reset_index()
 
 
 def filter_paraphrase(x):
     return x[:2]
+
+
+if __name__ == '__main__':
+    train_df, test_df = process_dataset('parler_annotated_data.csv')
+    train_df.to_csv('train.csv')
+    test_df.to_csv('test.csv')
