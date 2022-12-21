@@ -13,6 +13,8 @@ import copy
 import argparse
 import numpy as np
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -128,7 +130,7 @@ def get_important_scores(words, tgt_model, orig_prob, orig_label, orig_probs, to
     seqs = torch.tensor(all_input_ids, dtype=torch.long)
     masks = torch.tensor(all_masks, dtype=torch.long)
     segs = torch.tensor(all_segs, dtype=torch.long)
-    seqs = seqs.to('cuda')
+    seqs = seqs.to(device)
 
     eval_data = TensorDataset(seqs)
     # Run prediction for full data
@@ -202,7 +204,7 @@ def get_bpe_substitues(substitutes, tokenizer, mlm_model):
     word_list = []
     # all_substitutes = all_substitutes[:24]
     all_substitutes = torch.tensor(all_substitutes)  # [ N, L ]
-    all_substitutes = all_substitutes[:24].to('cuda')
+    all_substitutes = all_substitutes[:24].to(device)
     # print(substitutes.size(), all_substitutes.size())
     N, L = all_substitutes.size()
     word_predictions = mlm_model(all_substitutes)[0]  # N L vocab-size
@@ -228,9 +230,9 @@ def attack(feature, tgt_model, mlm_model, tokenizer, k, batch_size, max_length=5
     input_ids, token_type_ids = torch.tensor(inputs["input_ids"]), torch.tensor(inputs["token_type_ids"])
     attention_mask = torch.tensor([1] * len(input_ids))
     seq_len = input_ids.size(0)
-    orig_probs = tgt_model(input_ids.unsqueeze(0).to('cuda'),
-                           attention_mask.unsqueeze(0).to('cuda'),
-                           token_type_ids.unsqueeze(0).to('cuda')
+    orig_probs = tgt_model(input_ids.unsqueeze(0).to(device),
+                           attention_mask.unsqueeze(0).to(device),
+                           token_type_ids.unsqueeze(0).to(device)
                            )[0].squeeze()
     orig_probs = torch.softmax(orig_probs, -1)
     orig_label = torch.argmax(orig_probs)
@@ -242,7 +244,7 @@ def attack(feature, tgt_model, mlm_model, tokenizer, k, batch_size, max_length=5
 
     sub_words = ['[CLS]'] + sub_words[:max_length - 2] + ['[SEP]']
     input_ids_ = torch.tensor([tokenizer.convert_tokens_to_ids(sub_words)])
-    word_predictions = mlm_model(input_ids_.to('cuda'))[0].squeeze()  # seq-len(sub) vocab
+    word_predictions = mlm_model(input_ids_.to(device))[0].squeeze()  # seq-len(sub) vocab
     word_pred_scores_all, word_predictions = torch.topk(word_predictions, k, -1)  # seq-len k
 
     word_predictions = word_predictions[1:len(sub_words) + 1, :]
@@ -291,7 +293,7 @@ def attack(feature, tgt_model, mlm_model, tokenizer, k, batch_size, max_length=5
             temp_replace[top_index[0]] = substitute
             temp_text = tokenizer.convert_tokens_to_string(temp_replace)
             inputs = tokenizer.encode_plus(temp_text, None, add_special_tokens=True, max_length=max_length, )
-            input_ids = torch.tensor(inputs["input_ids"]).unsqueeze(0).to('cuda')
+            input_ids = torch.tensor(inputs["input_ids"]).unsqueeze(0).to(device)
             seq_len = input_ids.size(1)
             temp_prob = tgt_model(input_ids)[0].squeeze()
             feature.query += 1
@@ -433,11 +435,11 @@ def run_attack(data_path, mlm_path, tgt_path, output_dir='bertattack_output', nu
 
     config_atk = BertConfig.from_pretrained(mlm_path)
     mlm_model = BertForMaskedLM.from_pretrained(mlm_path, config=config_atk)
-    mlm_model.to('cuda')
+    mlm_model.to(device)
 
     config_tgt = BertConfig.from_pretrained(tgt_path, num_labels=num_label)
     tgt_model = BertForSequenceClassification.from_pretrained(tgt_path, config=config_tgt)
-    tgt_model.to('cuda')
+    tgt_model.to(device)
     features = get_data_cls(data_path)
     print('loading sim-embed')
 

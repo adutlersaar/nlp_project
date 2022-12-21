@@ -8,6 +8,13 @@ from tqdm.auto import tqdm
 tqdm.pandas()
 
 
+def save_processed_dataset():
+    train_df, test_df = process_dataset('parler_annotated_data.csv')
+    train_df[['text', 'label']].to_csv('aug_train.csv')
+    save_tsv(train_df[train_df['is_augmentation'] == 'Original'], 'train.tsv')
+    test_df.to_csv('test.csv')
+
+
 def process_dataset(csv_file, test_size=0.2, num_rows=None):
     df = pd.read_csv(csv_file)
     print(df.describe())
@@ -55,7 +62,4 @@ def save_tsv(df, csv_path):
 
 
 if __name__ == '__main__':
-    train_df, test_df = process_dataset('parler_annotated_data.csv')
-    train_df[['text', 'label']].to_csv('aug_train.csv')
-    save_tsv(train_df[train_df['is_augmentation'] == 'Original'], 'train.tsv')
-    test_df.to_csv('test.csv')
+    save_processed_dataset()
