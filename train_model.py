@@ -22,8 +22,8 @@ def train(train_df, test_df, output_dir='bert-fine-tuned'):
     trainer = Trainer(
         model_init=model_init,
         args=TrainingArguments(output_dir="bert_trainer", evaluation_strategy="epoch"),
-        train_dataset=Dataset.from_pandas(train_df),
-        eval_dataset=Dataset.from_pandas(test_df),
+        train_dataset=Dataset.from_pandas(train_df[['text', 'label']]),
+        eval_dataset=Dataset.from_pandas(test_df[['text', 'label']]),
         compute_metrics=compute_accuracy,
     )
     trainer.train()

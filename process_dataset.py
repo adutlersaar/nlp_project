@@ -42,7 +42,7 @@ def apply_augmentations(df):
         df,
         process_augmentation(df, lambda x: filter_paraphrase(bart_paraphrase(x)), 'bart'),
         process_augmentation(df, lambda x: filter_paraphrase(t5_paraphrase(x)), 't5')
-    ]).sample(frac=1)
+    ]).sample(frac=1).reset_index()
 
 
 def process_augmentation(df, aug_func, name):

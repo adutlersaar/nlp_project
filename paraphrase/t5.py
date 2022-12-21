@@ -1,5 +1,7 @@
 import torch
 from transformers import T5ForConditionalGeneration, T5Tokenizer
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
