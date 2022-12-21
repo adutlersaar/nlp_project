@@ -8,11 +8,11 @@ from tqdm.auto import tqdm
 tqdm.pandas()
 
 
-def save_processed_dataset():
-    train_df, test_df = process_dataset('parler_annotated_data.csv')
-    train_df[['text', 'label']].to_csv('aug_train.csv')
-    save_tsv(train_df[train_df['is_augmentation'] == 'Original'], 'train.tsv')
-    test_df.to_csv('test.csv')
+def save_processed_dataset(test_size=0.2, num_rows=None, files_prefix=''):
+    train_df, test_df = process_dataset('parler_annotated_data.csv', test_size=test_size, num_rows=num_rows)
+    train_df[['text', 'label']].to_csv(f'{files_prefix}aug_train.csv')
+    save_tsv(train_df[train_df['is_augmentation'] == 'Original'], f'{files_prefix}train.tsv')
+    test_df.to_csv(f'{files_prefix}test.csv')
 
 
 def process_dataset(csv_file, test_size=0.2, num_rows=None):
