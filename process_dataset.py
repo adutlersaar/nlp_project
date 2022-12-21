@@ -1,5 +1,7 @@
 from sklearn.model_selection import train_test_split
 import pandas as pd
+from tqdm.auto import tqdm
+tqdm.pandas()
 from paraphrase import bart_paraphrase, t5_paraphrase
 
 
@@ -34,7 +36,7 @@ def apply_augmentations(df):
 
 
 def process_augmentation(df, aug_func, name):
-    aug_df = df['text'].map(aug_func).explode().reset_index().join(df[['label']], on='index')[['text', 'label']]
+    aug_df = df['text'].progress_map(aug_func).explode().reset_index().join(df[['label']], on='index')[['text', 'label']]
     aug_df['is_augmentation'] = name
     return aug_df.reset_index()
 
