@@ -3,13 +3,13 @@ from transformers import BartTokenizer, BartForConditionalGeneration
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-bart = BartForConditionalGeneration.from_pretrained("stanford-oval/paraphraser-bart-large")
+bart = BartForConditionalGeneration.from_pretrained("stanford-oval/paraphraser-bart-large").to(device)
 bart_tokenizer = BartTokenizer.from_pretrained("stanford-oval/paraphraser-bart-large")
 
 
 def bart_paraphrase(sent):
     input_ids = bart_tokenizer(sent, return_tensors="pt")['input_ids']
-    outputs = bart.generate(input_ids,
+    outputs = bart.generate(input_ids.to(device),
                             num_beams=10,
                             top_k=50,
                             top_p=0.9,

@@ -1,5 +1,6 @@
 import csv
 import pickle
+from pathlib import Path
 
 from sklearn.model_selection import train_test_split
 import pandas as pd
@@ -9,13 +10,15 @@ tqdm.pandas()
 
 
 def save_processed_dataset(test_size=0.2, num_rows=None, files_prefix=''):
-    train_df, test_df = process_dataset('parler_annotated_data.csv', test_size=test_size, num_rows=num_rows)
-    train_df.to_csv(f'{files_prefix}aug_train.csv')
-    save_tsv(train_df[train_df['is_augmentation'] == 'Original'], f'{files_prefix}train.tsv')
-    test_df.to_csv(f'{files_prefix}test.csv')
+    train_df, val_df, test_df = process_dataset('data/parler_annotated_data.csv', test_size=test_size, num_rows=num_rows)
+    train_df.to_csv(Path('data', f'{files_prefix}train.csv'))
+    val_df.to_csv(Path('data', f'{files_prefix}val.csv'))
+    test_df.to_csv(Path('data', f'{files_prefix}test.csv'))
+    aug_train_df = apply_augmentations(train_df)
+    aug_train_df.to_csv(Path('data', f'{files_prefix}aug_train.csv'))
 
 
-def process_dataset(csv_file, test_size=0.2, num_rows=None):
+def process_dataset(csv_file, val_size=0.2, test_size=0.2, num_rows=None):
     df = pd.read_csv(csv_file)
     print(df.describe())
     df['label'] = df['label_mean'].map(regression_to_labels)
@@ -24,7 +27,8 @@ def process_dataset(csv_file, test_size=0.2, num_rows=None):
     if num_rows:
         df = df.iloc[:num_rows]
     train_df, test_df = train_test_split(df, test_size=test_size, stratify=df['label'])
-    return apply_augmentations(train_df), test_df
+    train_df, val_df = train_test_split(train_df, test_size=val_size, stratify=train_df['label'])
+    return train_df, val_df, test_df
 
 
 def regression_to_labels(x):
@@ -54,11 +58,6 @@ def process_augmentation(df, aug_func, name):
 
 def filter_paraphrase(x):
     return x[:2]
-
-
-def save_tsv(df, csv_path):
-    # used for bertattack
-    df[['text', 'label']].to_csv(csv_path, sep="\t", index=False, header=False, quoting=csv.QUOTE_NONE, escapechar='\n')
 
 
 if __name__ == '__main__':

@@ -2,7 +2,9 @@
 
 import warnings
 import os
+from pathlib import Path
 
+import pandas as pd
 import torch
 import torch.nn as nn
 import json
@@ -426,31 +428,21 @@ def dump_features(features, output):
     print('finished dump')
 
 
-def run_attack(data_path, mlm_path, tgt_path, output_dir='bertattack_output', num_label=2, use_bpe=None, k=50,
-               start=None, end=None, threshold_pred_score=0, use_sim_mat=None):
+def run_attack(df, mlm_path, tgt_path, output_dir='bertattack_output', num_label=2, use_bpe=None, k=50,
+               start=None, end=None, threshold_pred_score=0):
     print('start process')
 
     tokenizer_mlm = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
     tokenizer_tgt = BertTokenizer.from_pretrained(tgt_path, do_lower_case=True)
 
     config_atk = BertConfig.from_pretrained(mlm_path)
-    mlm_model = BertForMaskedLM.from_pretrained(mlm_path, config=config_atk)
-    mlm_model.to(device)
+    mlm_model = BertForMaskedLM.from_pretrained(mlm_path, config=config_atk).to(device)
 
     config_tgt = BertConfig.from_pretrained(tgt_path, num_labels=num_label)
-    tgt_model = BertForSequenceClassification.from_pretrained(tgt_path, config=config_tgt)
-    tgt_model.to(device)
-    features = get_data_cls(data_path)
-    print('loading sim-embed')
-
-    if use_sim_mat == 1:
-        cos_mat, w2i, i2w = get_sim_embed('data_defense/counter-fitted-vectors.txt',
-                                          'data_defense/cos_sim_counter_fitting.npy')
-    else:
-        cos_mat, w2i, i2w = None, {}, {}
-
-    print('finish get-sim-embed')
+    tgt_model = BertForSequenceClassification.from_pretrained(tgt_path, config=config_tgt).to(device)
+    features = df[['text', 'label']].values
     features_output = []
+    cos_mat, w2i, i2w = None, {}, {}
 
     with torch.no_grad():
         for index, feature in enumerate(features[start:end]):
@@ -461,7 +453,7 @@ def run_attack(data_path, mlm_path, tgt_path, output_dir='bertattack_output', nu
             feat = attack(feat, tgt_model, mlm_model, tokenizer_tgt, k, batch_size=32, max_length=512,
                           cos_mat=cos_mat, w2i=w2i, i2w=i2w, use_bpe=use_bpe, threshold_pred_score=threshold_pred_score)
 
-            # print(feat.changes, feat.change, feat.query, feat.success)
+            print(feat.changes, feat.change, feat.query, feat.success)
             if feat.success > 2:
                 print('success', end='')
             else:
@@ -474,4 +466,5 @@ def run_attack(data_path, mlm_path, tgt_path, output_dir='bertattack_output', nu
 
 
 if __name__ == '__main__':
-    run_attack('train.tsv', 'bert-base-uncased', 'bert-fine-tuned')
+    train_df = pd.read_csv(Path('data', 'train.csv'))
+    run_attack(train_df, 'bert-base-uncased', 'bert-base-uncased')# 'bert-fine-tuned')
