@@ -428,7 +428,7 @@ def dump_features(features, output):
     print('finished dump')
 
 
-def run_attack(df, mlm_path, tgt_path, output_dir='bertattack_output', num_label=2, use_bpe=None, k=50,
+def run_attack(df, mlm_path, tgt_path, output_dir='bertattack_output.json', num_label=2, use_bpe=None, k=50,
                start=None, end=None, threshold_pred_score=0):
     print('start process')
 
@@ -467,4 +467,6 @@ def run_attack(df, mlm_path, tgt_path, output_dir='bertattack_output', num_label
 
 if __name__ == '__main__':
     train_df = pd.read_csv(Path('data', 'train.csv'))
-    run_attack(train_df, 'bert-base-uncased', 'bert-base-uncased')# 'bert-fine-tuned')
+    run_attack(train_df, 'bert-base-uncased', 'bert-fine-tuned', output_dir='bert-fine-tuned_bertattack.json')
+    run_attack(train_df, 'bert-base-uncased', 'bert-fine-tuned-with-paraphrasing',
+               output_dir='bert-fine-tuned-with-paraphrasing_bertattack.json')

@@ -19,6 +19,7 @@ def tokenize(batch, max_length=100):
         return_tensors="pt",
     )
 
+
 def compute_accuracy(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
@@ -52,4 +53,5 @@ def train(train_df, test_df, output_dir='bert-fine-tuned', model_init=model_init
 
 
 if __name__ == '__main__':
-    train(pd.read_csv('train.csv'), pd.read_csv('test.csv'))
+    train(pd.read_csv('train.csv'), pd.read_csv('test.csv'), output_dir='bert-fine-tuned')
+    train(pd.read_csv('aug_train.csv'), pd.read_csv('test.csv'), output_dir='bert-fine-tuned-with-paraphrasing')
