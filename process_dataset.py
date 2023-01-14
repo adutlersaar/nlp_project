@@ -44,8 +44,8 @@ def apply_augmentations(df):
     df['is_augmentation'] = 'Original'
     return pd.concat([
         df,
-        process_augmentation(df, lambda x: filter_paraphrase(bart_paraphrase(x)), 'bart'),
-        process_augmentation(df, lambda x: filter_paraphrase(t5_paraphrase(x)), 't5')
+        process_augmentation(df, lambda x: apply_paraphrasing(x, bart_paraphrase), 'bart'),
+        process_augmentation(df, lambda x: apply_paraphrasing(x, t5_paraphrase), 't5')
     ]).sample(frac=1).reset_index()
 
 
@@ -56,8 +56,12 @@ def process_augmentation(df, aug_func, name):
     return aug_df.reset_index()
 
 
-def filter_paraphrase(x):
-    return x[:2]
+def apply_paraphrasing(x, paraphraser, num_samples=2):
+    try:
+        return paraphraser(x)[:num_samples]
+    except Exception as e:
+        print(str(e))
+        return []
 
 
 if __name__ == '__main__':
