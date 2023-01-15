@@ -26,6 +26,7 @@ def run():
     parser_train.add_argument('--with-bart-aug', action='store_true')
     parser_train.add_argument('--with-t5-aug', action='store_true')
     parser_train.add_argument('--output-dir', type=str)
+    parser.add_argument('--log-wandb', action='store_true', help='Log to WANDB')
 
     parser_bertattack = subparsers.add_parser('bertattack')
     parser_bertattack.set_defaults(func=load_and_attack)
@@ -34,7 +35,7 @@ def run():
     parser_bertattack.add_argument('--output-path', type=str)
 
     args = parser.parse_args()
-    args.func(args)
+    args.func(**vars(args))
 
 
 if __name__ == '__main__':
