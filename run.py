@@ -26,7 +26,7 @@ def run():
     parser_train.add_argument('--with-bart-aug', action='store_true')
     parser_train.add_argument('--with-t5-aug', action='store_true')
     parser_train.add_argument('--output-dir', type=str)
-    parser.add_argument('--log-wandb', action='store_true', help='Log to WANDB')
+    parser_train.add_argument('--log-wandb', action='store_true', help='Log to WANDB')
 
     parser_bertattack = subparsers.add_parser('bertattack')
     parser_bertattack.set_defaults(func=load_and_attack)
