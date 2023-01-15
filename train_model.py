@@ -30,7 +30,7 @@ def model_init(pretrained_weights='bert-base-uncased'):
     return initializer
 
 
-def train(train_df, test_df, output_dir, log_wandb=False):
+def train(train_df, test_df, output_dir):
     train_args = TrainingArguments(
         output_dir=f"./{output_dir}-results",
         evaluation_strategy="epoch",
@@ -52,8 +52,8 @@ def train(train_df, test_df, output_dir, log_wandb=False):
     trainer.save_model(output_dir)
 
 
-def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, log_wandb=False, **kwargs):
+def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, **kwargs):
     if not output_dir:
         output_dir = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
     train_df, test_df = load_datasets(data_dir=data_dir, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
-    train(train_df, test_df, output_dir=output_dir, log_wandb=log_wandb)
+    train(train_df, test_df, output_dir=output_dir)
