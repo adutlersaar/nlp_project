@@ -7,14 +7,16 @@ import numpy as np
 import pandas as pd
 import evaluate
 
-accuracy_metric = evaluate.load("accuracy")
+from load_data import load_datasets
+from metrics import compute_metrics
+
 bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
 
 def tokenize(batch, max_length=100):
     return bert_tokenizer(
         batch['text'],
-        #add_special_tokens=True,
+        # add_special_tokens=True,
         truncation=True,
         padding="max_length",
         max_length=max_length,
@@ -22,17 +24,13 @@ def tokenize(batch, max_length=100):
     )
 
 
-def compute_accuracy(eval_pred):
-    logits, labels = eval_pred
-    predictions = np.argmax(logits, axis=-1)
-    return accuracy_metric.compute(predictions=predictions, references=labels)
+def model_init(pretrained_weights='bert-base-uncased'):
+    def initializer():
+        return BertForSequenceClassification.from_pretrained(pretrained_weights, num_labels=2)
+    return initializer
 
 
-def model_init():
-    return BertForSequenceClassification.from_pretrained("bert-base-cased", num_labels=2)
-
-
-def train(train_df, test_df, output_dir='bert-fine-tuned', model_init=model_init):
+def train(train_df, test_df, output_dir):
     train_args = TrainingArguments(
         output_dir=f"./{output_dir}-results",
         evaluation_strategy="epoch",
@@ -48,12 +46,14 @@ def train(train_df, test_df, output_dir='bert-fine-tuned', model_init=model_init
         args=train_args,
         train_dataset=Dataset.from_pandas(train_df[['text', 'label']]).map(tokenize, batched=True),
         eval_dataset=Dataset.from_pandas(test_df[['text', 'label']]).map(tokenize, batched=True),
-        compute_metrics=compute_accuracy,
+        compute_metrics=compute_metrics,
     )
     trainer.train()
     trainer.save_model(output_dir)
 
 
-if __name__ == '__main__':
-    train(pd.read_csv(Path('data', 'train.csv')), pd.read_csv(Path('data', 'test.csv')), output_dir='bert-fine-tuned')
-    train(pd.read_csv(Path('data', 'aug_train.csv')), pd.read_csv(Path('data', 'test.csv')), output_dir='bert-fine-tuned-with-paraphrasing')
+def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None):
+    if not output_dir:
+        output_dir = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
+    train_df, test_df = load_datasets(data_dir=data_dir, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
+    train(train_df, test_df, output_dir=output_dir)

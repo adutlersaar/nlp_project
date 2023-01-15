@@ -15,6 +15,8 @@ import copy
 import argparse
 import numpy as np
 
+from load_data import load_datasets
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -428,7 +430,7 @@ def dump_features(features, output):
     print('finished dump')
 
 
-def run_attack(df, mlm_path, tgt_path, output_dir='bertattack_output.json', num_label=2, use_bpe=None, k=50,
+def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num_label=2, use_bpe=None, k=50,
                start=None, end=None, threshold_pred_score=0):
     print('start process')
 
@@ -462,11 +464,10 @@ def run_attack(df, mlm_path, tgt_path, output_dir='bertattack_output.json', num_
 
     evaluate(features_output)
 
-    dump_features(features_output, output_dir)
+    dump_features(features_output, output_path)
 
 
-if __name__ == '__main__':
-    train_df = pd.read_csv(Path('data', 'train.csv'))
-    run_attack(train_df, 'bert-base-uncased', 'bert-fine-tuned', output_dir='bert-fine-tuned_bertattack.json')
-    run_attack(train_df, 'bert-base-uncased', 'bert-fine-tuned-with-paraphrasing',
-               output_dir='bert-fine-tuned-with-paraphrasing_bertattack.json')
+def load_and_attack(data_dir='data', with_bart_aug=False, with_t5_aug=False):
+    train_df = pd.read_csv(Path(data_dir, 'train.csv'))
+    tgt_path = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
+    run_attack(train_df, 'bert-base-uncased', tgt_path, output_path=f'{tgt_path}-bertattack.json')
