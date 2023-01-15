@@ -12,10 +12,7 @@ from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from transformers import BertConfig, BertTokenizer
 from transformers import BertForSequenceClassification, BertForMaskedLM
 import copy
-import argparse
 import numpy as np
-
-from load_data import load_datasets
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

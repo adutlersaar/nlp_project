@@ -1,11 +1,6 @@
-from pathlib import Path
-
 from transformers import BertForSequenceClassification, BertTokenizer
 from transformers import TrainingArguments, Trainer
 from datasets import Dataset
-import numpy as np
-import pandas as pd
-import evaluate
 
 from load_data import load_datasets
 from metrics import compute_metrics
@@ -24,15 +19,9 @@ def tokenize(batch, max_length=100):
     )
 
 
-def model_init(pretrained_weights='bert-base-uncased'):
-    def initializer():
-        return BertForSequenceClassification.from_pretrained(pretrained_weights, num_labels=2)
-    return initializer
-
-
 def train(train_df, test_df, output_dir):
     train_args = TrainingArguments(
-        output_dir=f"./{output_dir}-results",
+        output_dir=output_dir,
         evaluation_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=32,
@@ -41,7 +30,7 @@ def train(train_df, test_df, output_dir):
         weight_decay=0.01
     )
     trainer = Trainer(
-        model_init=model_init,
+        model=BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2),
         tokenizer=bert_tokenizer,
         args=train_args,
         train_dataset=Dataset.from_pandas(train_df[['text', 'label']]).map(tokenize, batched=True),
@@ -49,7 +38,6 @@ def train(train_df, test_df, output_dir):
         compute_metrics=compute_metrics,
     )
     trainer.train()
-    trainer.save_model(output_dir)
 
 
 def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, **kwargs):
