@@ -467,7 +467,7 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
     dump_features(features_output, output_path)
 
 
-def load_and_attack(data_dir='data', with_bart_aug=False, with_t5_aug=False):
+def load_and_attack(data_dir='data', with_bart_aug=False, with_t5_aug=False, **kwargs):
     train_df = pd.read_csv(Path(data_dir, 'train.csv'))
     tgt_path = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
     run_attack(train_df, 'bert-base-uncased', tgt_path, output_path=f'{tgt_path}-bertattack.json')

@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 tqdm.pandas()
 
 
-def preprocess_dataset(test_size=0.2, num_rows=None, data_dir='data'):
+def preprocess_dataset(test_size=0.2, num_rows=None, data_dir='data', **kwargs):
     train_df, val_df, test_df = process_dataset(Path(data_dir, 'parler_annotated_data.csv'), test_size=test_size,
                                                 num_rows=num_rows)
     train_df.to_csv(Path(data_dir, 'train.csv'))

@@ -52,7 +52,7 @@ def train(train_df, test_df, output_dir, log_wandb=False):
     trainer.save_model(output_dir)
 
 
-def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, log_wandb=False):
+def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, log_wandb=False, **kwargs):
     if not output_dir:
         output_dir = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
     train_df, test_df = load_datasets(data_dir=data_dir, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
