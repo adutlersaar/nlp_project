@@ -22,12 +22,17 @@ def tokenize(batch, max_length=100):
 def train(train_df, test_df, output_dir):
     train_args = TrainingArguments(
         output_dir=output_dir,
+        overwrite_output_dir=True,
         evaluation_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
-        num_train_epochs=50,
-        weight_decay=0.01
+        num_train_epochs=10,
+        weight_decay=0.01,
+        save_strategy='no',
+        save_total_limit=1,
+        load_best_model_at_end=True,
+        metric_for_best_model='f1'
     )
     trainer = Trainer(
         model=BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2),
