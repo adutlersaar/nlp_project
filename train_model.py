@@ -38,6 +38,7 @@ def train(train_df, test_df, output_dir):
         compute_metrics=compute_metrics,
     )
     trainer.train()
+    trainer.save_model(output_dir)
 
 
 def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, **kwargs):
