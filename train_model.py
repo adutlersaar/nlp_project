@@ -1,11 +1,11 @@
-from transformers import BertForSequenceClassification, BertTokenizer, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer
 from datasets import Dataset
 
 from load_data import load_datasets
 from metrics import compute_metrics
 
-bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
+bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased", use_fast=False)
 
 
 def tokenize(batch, max_length=100):
