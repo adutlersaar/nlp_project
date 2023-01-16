@@ -14,6 +14,9 @@ import copy
 import numpy as np
 from tqdm.auto import tqdm
 
+from load_data import load_datasets
+from train_model import train
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -172,7 +175,7 @@ def get_substitues(substitutes, tokenizer, mlm_model, use_bpe, substitutes_score
                 break
             words.append(tokenizer._convert_id_to_token(int(i)))
     else:
-        if use_bpe == 1:
+        if use_bpe:
             words = get_bpe_substitues(substitutes, tokenizer, mlm_model)
         else:
             return words
@@ -461,7 +464,17 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
     dump_features(features_output, output_path)
 
 
-def load_and_attack(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, **kwargs):
-    train_df = pd.read_csv(Path(data_dir, 'train.csv'))
+def load_and_attack(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, use_bpe=False, epochs=5, **kwargs):
     tgt_path = f'{pretrained_weights}-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
-    run_attack(train_df, pretrained_weights, tgt_path, output_path=f'{tgt_path}-bertattack.json')
+    adv_data_path = Path(data_dir, f'{tgt_path}-{"with_bpe" if use_bpe else "no_bpe"}-bertattack.json')
+    if not adv_data_path.exists():
+        train_df = pd.read_csv(Path(data_dir, 'train.csv'))
+        run_attack(train_df, pretrained_weights, tgt_path, output_path=str(adv_data_path), use_bpe=use_bpe)
+    adv_train(data_dir, str(adv_data_path), pretrained_weights=tgt_path, epochs=epochs)
+
+
+def adv_train(data_dir, adv_data_path, pretrained_weights, epochs):
+    adv_train_df = pd.read_json(adv_data_path)
+    adv_train_df = adv_train_df[adv_train_df['success'] > 2][['label', 'adv']].rename(columns={'adv': 'text'})
+    test_df = pd.read_csv(Path(data_dir, 'test.csv'))
+    train(adv_train_df, test_df, pretrained_weights, output_dir=f'{pretrained_weights}-adv-trained', epochs=epochs)

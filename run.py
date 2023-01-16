@@ -33,6 +33,7 @@ def run():
     parser_bertattack.add_argument('--with-bart-aug', action='store_true')
     parser_bertattack.add_argument('--with-t5-aug', action='store_true')
     parser_bertattack.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
+    parser_bertattack.add_argument('--use-bpe', action='store_true')
 
     args = parser.parse_args()
     args.func(**vars(args))
