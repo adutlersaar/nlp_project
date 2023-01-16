@@ -246,6 +246,11 @@ def attack(feature, tgt_model, mlm_model, tokenizer, k, batch_size, max_length=5
         feature.success = 3
         return feature
 
+    if len(words) < 2:
+        # function _get_masked return empty array for single word input - which creates a bug
+        feature.success = 0
+        return feature
+
     sub_words = ['[CLS]'] + sub_words[:max_length - 2] + ['[SEP]']
     input_ids_ = torch.tensor([tokenizer.convert_tokens_to_ids(sub_words)])
     word_predictions = mlm_model(input_ids_.to(device))[0].squeeze()  # seq-len(sub) vocab
@@ -447,16 +452,10 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
         for index, feature in enumerate(tqdm(features[start:end])):
             seq_a, label = feature
             feat = Feature(seq_a, label)
-            print('\r number {:d} '.format(index) + tgt_path, end='')
-            # print(feat.seq[:100], feat.label)
             feat = attack(feat, tgt_model, mlm_model, tokenizer, k, batch_size=32, max_length=512,
                           cos_mat=cos_mat, w2i=w2i, i2w=i2w, use_bpe=use_bpe, threshold_pred_score=threshold_pred_score)
 
-            print(feat.changes, feat.change, feat.query, feat.success)
-            if feat.success > 2:
-                print('success', end='')
-            else:
-                print('failed', end='')
+            print(index, ':', feat.changes, feat.change, feat.query, feat.success, 'success' if feat.success > 2 else 'failed')
             features_output.append(feat)
 
     evaluate(features_output)
