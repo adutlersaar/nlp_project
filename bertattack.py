@@ -444,7 +444,7 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
     cos_mat, w2i, i2w = None, {}, {}
 
     with torch.no_grad():
-        for index, feature in tqdm(enumerate(features[start:end])):
+        for index, feature in enumerate(tqdm(features[start:end])):
             seq_a, label = feature
             feat = Feature(seq_a, label)
             print('\r number {:d} '.format(index) + tgt_path, end='')
