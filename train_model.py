@@ -30,8 +30,8 @@ def train(train_df, test_df, pretrained_weights, output_dir, epochs=10):
         per_device_eval_batch_size=32,
         num_train_epochs=epochs,
         weight_decay=0.01,
-        save_strategy='no',
-        save_total_limit=1,
+        save_strategy='epoch',
+        save_total_limit=2,
         load_best_model_at_end=True,
         metric_for_best_model='f1'
     )
