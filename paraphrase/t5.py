@@ -17,7 +17,7 @@ def t5_paraphrase(sent):
                           min_length=int(0.8 * len(encoding["input_ids"][0])),
                           max_length=int(1.2 * len(encoding["input_ids"][0])),
                           top_k=50,
-                          top_p=0.99,
+                          top_p=0.9,
                           early_stopping=True,
                           num_return_sequences=10
                           )
