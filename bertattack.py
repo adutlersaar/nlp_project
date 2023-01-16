@@ -9,10 +9,10 @@ import torch
 import torch.nn as nn
 import json
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
-from transformers import BertConfig, BertTokenizer
-from transformers import BertForSequenceClassification, BertForMaskedLM
+from transformers import BertForSequenceClassification, BertForMaskedLM, BertTokenizer
 import copy
 import numpy as np
+from tqdm.auto import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -118,7 +118,7 @@ def get_important_scores(words, tgt_model, orig_prob, orig_label, orig_probs, to
     all_masks = []
     all_segs = []
     for text in texts:
-        inputs = tokenizer.encode_plus(text, None, add_special_tokens=True, max_length=max_length, )
+        inputs = tokenizer.encode_plus(text, None, add_special_tokens=True, max_length=max_length, truncation=True)
         input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
         attention_mask = [1] * len(input_ids)
         padding_length = max_length - len(input_ids)
@@ -227,7 +227,7 @@ def attack(feature, tgt_model, mlm_model, tokenizer, k, batch_size, max_length=5
     words, sub_words, keys = _tokenize(feature.seq, tokenizer)
 
     # original label
-    inputs = tokenizer.encode_plus(feature.seq, None, add_special_tokens=True, max_length=max_length, )
+    inputs = tokenizer.encode_plus(feature.seq, None, add_special_tokens=True, max_length=max_length, truncation=True)
     input_ids, token_type_ids = torch.tensor(inputs["input_ids"]), torch.tensor(inputs["token_type_ids"])
     attention_mask = torch.tensor([1] * len(input_ids))
     seq_len = input_ids.size(0)
@@ -293,7 +293,7 @@ def attack(feature, tgt_model, mlm_model, tokenizer, k, batch_size, max_length=5
             temp_replace = final_words
             temp_replace[top_index[0]] = substitute
             temp_text = tokenizer.convert_tokens_to_string(temp_replace)
-            inputs = tokenizer.encode_plus(temp_text, None, add_special_tokens=True, max_length=max_length, )
+            inputs = tokenizer.encode_plus(temp_text, None, add_special_tokens=True, max_length=max_length, truncation=True)
             input_ids = torch.tensor(inputs["input_ids"]).unsqueeze(0).to(device)
             seq_len = input_ids.size(1)
             temp_prob = tgt_model(input_ids)[0].squeeze()
@@ -431,25 +431,22 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
                start=None, end=None, threshold_pred_score=0):
     print('start process')
 
-    tokenizer_mlm = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
-    tokenizer_tgt = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
+    tokenizer = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
 
-    config_atk = BertConfig.from_pretrained(mlm_path)
-    mlm_model = BertForMaskedLM.from_pretrained(mlm_path, config=config_atk).to(device)
+    mlm_model = BertForMaskedLM.from_pretrained(mlm_path).to(device)
+    tgt_model = BertForSequenceClassification.from_pretrained(tgt_path, num_labels=num_label).to(device)
 
-    config_tgt = BertConfig.from_pretrained(tgt_path, num_labels=num_label)
-    tgt_model = BertForSequenceClassification.from_pretrained(tgt_path, config=config_tgt).to(device)
     features = df[['text', 'label']].values
     features_output = []
     cos_mat, w2i, i2w = None, {}, {}
 
     with torch.no_grad():
-        for index, feature in enumerate(features[start:end]):
+        for index, feature in tqdm(enumerate(features[start:end])):
             seq_a, label = feature
             feat = Feature(seq_a, label)
             print('\r number {:d} '.format(index) + tgt_path, end='')
             # print(feat.seq[:100], feat.label)
-            feat = attack(feat, tgt_model, mlm_model, tokenizer_tgt, k, batch_size=32, max_length=512,
+            feat = attack(feat, tgt_model, mlm_model, tokenizer, k, batch_size=32, max_length=512,
                           cos_mat=cos_mat, w2i=w2i, i2w=i2w, use_bpe=use_bpe, threshold_pred_score=threshold_pred_score)
 
             print(feat.changes, feat.change, feat.query, feat.success)
@@ -464,7 +461,7 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
     dump_features(features_output, output_path)
 
 
-def load_and_attack(data_dir='data', with_bart_aug=False, with_t5_aug=False, **kwargs):
+def load_and_attack(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, **kwargs):
     train_df = pd.read_csv(Path(data_dir, 'train.csv'))
-    tgt_path = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
-    run_attack(train_df, 'bert-base-uncased', tgt_path, output_path=f'{tgt_path}-bertattack.json')
+    tgt_path = f'{pretrained_weights}-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
+    run_attack(train_df, pretrained_weights, tgt_path, output_path=f'{tgt_path}-bertattack.json')

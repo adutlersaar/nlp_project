@@ -25,7 +25,6 @@ def run():
     parser_train.set_defaults(func=load_and_train)
     parser_train.add_argument('--with-bart-aug', action='store_true')
     parser_train.add_argument('--with-t5-aug', action='store_true')
-    parser_train.add_argument('--output-dir', type=str)
     parser_train.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
     parser_train.add_argument('--epochs', type=int, default=10)
 
@@ -33,7 +32,7 @@ def run():
     parser_bertattack.set_defaults(func=load_and_attack)
     parser_bertattack.add_argument('--with-bart-aug', action='store_true')
     parser_bertattack.add_argument('--with-t5-aug', action='store_true')
-    parser_bertattack.add_argument('--output-path', type=str)
+    parser_bertattack.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
 
     args = parser.parse_args()
     args.func(**vars(args))
