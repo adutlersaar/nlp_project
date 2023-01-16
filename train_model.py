@@ -19,7 +19,7 @@ def tokenize(batch, max_length=100):
     )
 
 
-def train(train_df, test_df, output_dir):
+def train(train_df, test_df, pretrained_weights, output_dir):
     train_args = TrainingArguments(
         output_dir=output_dir,
         overwrite_output_dir=True,
@@ -35,7 +35,7 @@ def train(train_df, test_df, output_dir):
         metric_for_best_model='f1'
     )
     trainer = Trainer(
-        model=BertForSequenceClassification.from_pretrained('bert-base-uncased', num_labels=2),
+        model=BertForSequenceClassification.from_pretrained(pretrained_weights, num_labels=2),
         tokenizer=bert_tokenizer,
         args=train_args,
         train_dataset=Dataset.from_pandas(train_df[['text', 'label']]).map(tokenize, batched=True),
@@ -46,8 +46,8 @@ def train(train_df, test_df, output_dir):
     trainer.save_model(output_dir)
 
 
-def load_and_train(data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, **kwargs):
+def load_and_train(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, **kwargs):
     if not output_dir:
-        output_dir = f'bert-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
+        output_dir = f'{pretrained_weights}-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
     train_df, test_df = load_datasets(data_dir=data_dir, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
-    train(train_df, test_df, output_dir=output_dir)
+    train(train_df, test_df, pretrained_weights, output_dir)
