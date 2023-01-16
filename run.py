@@ -27,6 +27,7 @@ def run():
     parser_train.add_argument('--with-t5-aug', action='store_true')
     parser_train.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
     parser_train.add_argument('--epochs', type=int, default=10)
+    parser_train.add_argument('--learning-rate', type=float, default=2e-5)
 
     parser_bertattack = subparsers.add_parser('bertattack')
     parser_bertattack.set_defaults(func=load_and_attack)
@@ -35,6 +36,7 @@ def run():
     parser_bertattack.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
     parser_bertattack.add_argument('--use-bpe', action='store_true')
     parser_bertattack.add_argument('--epochs', type=int, default=5)
+    parser_bertattack.add_argument('--learning-rate', type=float, default=1e-5)
 
     args = parser.parse_args()
     args.func(**vars(args))
