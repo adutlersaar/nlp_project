@@ -469,7 +469,7 @@ def load_and_attack(pretrained_weights, data_dir='data', with_bart_aug=False, wi
     adv_data_path = Path(data_dir, f'{tgt_path}-{"with_bpe" if use_bpe else "no_bpe"}-bertattack.json')
     if not adv_data_path.exists():
         train_df = pd.read_csv(Path(data_dir, 'train.csv'))
-        run_attack(train_df, pretrained_weights, tgt_path, output_path=str(adv_data_path), use_bpe=use_bpe)
+        run_attack(train_df, pretrained_weights, tgt_path, output_path=str(adv_data_path), use_bpe=use_bpe, end=2)
     adv_train(data_dir, str(adv_data_path), pretrained_weights=tgt_path, epochs=epochs)
 
 
