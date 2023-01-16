@@ -19,15 +19,16 @@ def tokenize(batch, max_length=100):
     )
 
 
-def train(train_df, test_df, pretrained_weights, output_dir):
+def train(train_df, test_df, pretrained_weights, output_dir, epochs=10):
     train_args = TrainingArguments(
         output_dir=output_dir,
         overwrite_output_dir=True,
         evaluation_strategy="epoch",
+        logging_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=32,
         per_device_eval_batch_size=32,
-        num_train_epochs=10,
+        num_train_epochs=epochs,
         weight_decay=0.01,
         save_strategy='no',
         save_total_limit=1,
@@ -46,8 +47,8 @@ def train(train_df, test_df, pretrained_weights, output_dir):
     trainer.save_model(output_dir)
 
 
-def load_and_train(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, **kwargs):
+def load_and_train(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, output_dir=None, epochs=10, **kwargs):
     if not output_dir:
         output_dir = f'{pretrained_weights}-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
     train_df, test_df = load_datasets(data_dir=data_dir, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
-    train(train_df, test_df, pretrained_weights, output_dir)
+    train(train_df, test_df, pretrained_weights, output_dir, epochs)

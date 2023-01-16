@@ -27,6 +27,7 @@ def run():
     parser_train.add_argument('--with-t5-aug', action='store_true')
     parser_train.add_argument('--output-dir', type=str)
     parser_train.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
+    parser_train.add_argument('--epochs', type=int, default=10)
 
     parser_bertattack = subparsers.add_parser('bertattack')
     parser_bertattack.set_defaults(func=load_and_attack)
