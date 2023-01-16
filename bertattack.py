@@ -432,7 +432,7 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
     print('start process')
 
     tokenizer_mlm = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
-    tokenizer_tgt = BertTokenizer.from_pretrained(tgt_path, do_lower_case=True)
+    tokenizer_tgt = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
 
     config_atk = BertConfig.from_pretrained(mlm_path)
     mlm_model = BertForMaskedLM.from_pretrained(mlm_path, config=config_atk).to(device)
