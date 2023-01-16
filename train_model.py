@@ -1,11 +1,11 @@
-from transformers import BertForSequenceClassification, BertTokenizer
+from transformers import BertForSequenceClassification, BertTokenizer, AutoTokenizer, AutoModelForSequenceClassification
 from transformers import TrainingArguments, Trainer
 from datasets import Dataset
 
 from load_data import load_datasets
 from metrics import compute_metrics
 
-bert_tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
+bert_tokenizer = AutoTokenizer.from_pretrained("bert-base-cased")
 
 
 def tokenize(batch, max_length=100):
@@ -36,7 +36,7 @@ def train(train_df, test_df, pretrained_weights, output_dir, epochs=10):
         metric_for_best_model='f1'
     )
     trainer = Trainer(
-        model=BertForSequenceClassification.from_pretrained(pretrained_weights, num_labels=2),
+        model=AutoModelForSequenceClassification.from_pretrained(pretrained_weights, num_labels=2),
         tokenizer=bert_tokenizer,
         args=train_args,
         train_dataset=Dataset.from_pandas(train_df[['text', 'label']]).map(tokenize, batched=True),
