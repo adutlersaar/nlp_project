@@ -5,6 +5,8 @@ from paraphrase import PARAPHRASERS
 from train_model import load_and_train
 from augment_dataset import augment_dataset
 from preprocess_dataset import preprocess_dataset
+from plot import plot_roc
+from upload_to_hub import upload_locally_saved_models, upload_model
 
 
 def run():
@@ -37,6 +39,18 @@ def run():
     parser_bertattack.add_argument('--use-bpe', action='store_true')
     parser_bertattack.add_argument('--epochs', type=int, default=5)
     parser_bertattack.add_argument('--learning-rate', type=float, default=1e-5)
+
+    parser_plot = subparsers.add_parser('plot_roc')
+    parser_plot.set_defaults(func=plot_roc)
+    parser_plot.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
+
+    parser_upload = subparsers.add_parser('upload')
+    parser_upload.set_defaults(func=upload_model)
+    parser_upload.add_argument('--pretrained-weights', type=str, required=True)
+
+    parser_upload_all = subparsers.add_parser('upload_all')
+    parser_upload_all.set_defaults(func=upload_locally_saved_models)
+    parser_upload_all.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
 
     args = parser.parse_args()
     args.func(**vars(args))

@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pandas as pd
-from datasets import Dataset
 from sklearn.metrics import RocCurveDisplay
 import matplotlib.pyplot as plt
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
@@ -9,24 +8,20 @@ import torch
 from tqdm.auto import tqdm
 
 from train_model import tokenize
+from upload_to_hub import get_locally_saved_models
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-models = ['bert-base-uncased-fine-tuned-data-no_bart-no_t5',
-          'bert-base-uncased-fine-tuned-data-no_bart-with_t5',
-          'bert-base-uncased-fine-tuned-data-with_bart-no_t5',
-          'bert-base-uncased-fine-tuned-data-with_bart-with_t5']
 
-tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased', use_fast=False)
-
-
-def plot_roc(data_dir='data'):
+def plot_roc(data_dir='data', pretrained_weights='bert-base-uncased'):
+    tokenizer = AutoTokenizer.from_pretrained(pretrained_weights, use_fast=False)
     test_df = pd.read_csv(Path(data_dir, 'test.csv'))
     X_test, y_test = test_df['text'].values, test_df['label'].values
+    saved_models = get_locally_saved_models(pretrained_weights)
 
     fig, ax = plt.subplots(figsize=(12, 12))
     with torch.no_grad():
-        for model_name in models:
+        for model_name in saved_models:
             model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2).to(device)
             y_pred = []
             for sent in tqdm(X_test):
