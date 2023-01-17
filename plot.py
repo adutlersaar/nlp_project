@@ -13,7 +13,7 @@ from upload_to_hub import get_locally_saved_models
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def plot_roc(data_dir='data', pretrained_weights='bert-base-uncased'):
+def plot_roc(data_dir='data', pretrained_weights='bert-base-uncased', **kwargs):
     tokenizer = AutoTokenizer.from_pretrained(pretrained_weights, use_fast=False)
     test_df = pd.read_csv(Path(data_dir, 'test.csv'))
     X_test, y_test = test_df['text'].values, test_df['label'].values
