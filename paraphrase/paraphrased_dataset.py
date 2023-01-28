@@ -25,7 +25,7 @@ class ParaphrasedDataset(Dataset):
         record = self.df.iloc[idx]
         paraphrases = random.choice(self.paraphrasers)(record['text'])
         paraphrased_text = random.choice(paraphrases) if len(paraphrases) else record['text']
-        return self.tokenize_text(paraphrased_text), torch.tensor(record['label'], dtype=torch.int64)
+        return {**self.tokenize_text(paraphrased_text), 'label': torch.tensor(record['label'], dtype=torch.int64)}
 
     def tokenize_text(self, text):
         tokenized = self.tokenizer(text,
