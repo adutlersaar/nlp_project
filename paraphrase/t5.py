@@ -9,6 +9,7 @@ t5 = T5ForConditionalGeneration.from_pretrained('ramsrigouthamg/t5_paraphraser')
 t5_tokenizer = T5Tokenizer.from_pretrained('ramsrigouthamg/t5_paraphraser')
 
 
+@torch.no_grad()
 def t5_paraphrase(sent):
     encoding = t5_tokenizer.encode_plus(f"paraphrase: {sent} </s>", return_tensors="pt")
     outputs = t5.generate(input_ids=encoding["input_ids"].to(device),

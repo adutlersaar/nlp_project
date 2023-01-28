@@ -7,6 +7,7 @@ bart = BartForConditionalGeneration.from_pretrained("stanford-oval/paraphraser-b
 bart_tokenizer = BartTokenizer.from_pretrained("stanford-oval/paraphraser-bart-large")
 
 
+@torch.no_grad()
 def bart_paraphrase(sent):
     input_ids = bart_tokenizer(sent, return_tensors="pt")['input_ids']
     outputs = bart.generate(input_ids.to(device),
