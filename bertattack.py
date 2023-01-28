@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import json
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
-from transformers import BertForSequenceClassification, BertForMaskedLM, BertTokenizer
+from transformers import AutoModelForSequenceClassification, AutoModelForMaskedLM, AutoTokenizer
 import copy
 import numpy as np
 from tqdm.auto import tqdm
@@ -439,10 +439,10 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
                start=None, end=None, threshold_pred_score=0):
     print('start process')
 
-    tokenizer = BertTokenizer.from_pretrained(mlm_path, do_lower_case=True)
+    tokenizer = AutoTokenizer.from_pretrained(mlm_path, do_lower_case=True, use_fast=False)
 
-    mlm_model = BertForMaskedLM.from_pretrained(mlm_path).to(device)
-    tgt_model = BertForSequenceClassification.from_pretrained(tgt_path, num_labels=num_label).to(device)
+    mlm_model = AutoModelForMaskedLM.from_pretrained(mlm_path).to(device)
+    tgt_model = AutoModelForSequenceClassification.from_pretrained(tgt_path, num_labels=num_label).to(device)
 
     features = df[['text', 'label']].values
     features_output = []
