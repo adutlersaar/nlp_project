@@ -1,23 +1,15 @@
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from pathlib import Path
+
+import pandas as pd
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 from transformers import TrainingArguments, Trainer
-from datasets import Dataset
 
-from load_data import load_datasets
 from metrics import compute_metrics
+from paraphrase.paraphrased_dataset import ParaphrasedDataset
+from upload_to_hub import upload_model
 
 
-def tokenize(tokenizer, batch, max_length=100):
-    return tokenizer(
-        batch['text'],
-        # add_special_tokens=True,
-        truncation=True,
-        padding="max_length",
-        max_length=max_length,
-        return_tensors="pt",
-    )
-
-
-def train(train_df, test_df, pretrained_weights, output_dir, epochs=10, learning_rate=2e-5):
+def train(train_ds, test_ds, pretrained_weights, output_dir, epochs=10, learning_rate=2e-5, upload=False):
     train_args = TrainingArguments(
         output_dir=output_dir,
         overwrite_output_dir=True,
@@ -39,15 +31,20 @@ def train(train_df, test_df, pretrained_weights, output_dir, epochs=10, learning
         model=model,
         tokenizer=tokenizer,
         args=train_args,
-        train_dataset=Dataset.from_pandas(train_df[['text', 'label']]).map(lambda x: tokenize(tokenizer, x), batched=True),
-        eval_dataset=Dataset.from_pandas(test_df[['text', 'label']]).map(lambda x: tokenize(tokenizer, x), batched=True),
+        train_dataset=train_ds,
+        eval_dataset=test_ds,
         compute_metrics=compute_metrics,
     )
     trainer.train()
     trainer.save_model(output_dir)
+    if upload:
+        upload_model(output_dir)
 
 
-def load_and_train(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, epochs=10, learning_rate=2e-5, **kwargs):
+def load_and_train(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, epochs=10,
+                   learning_rate=2e-5, upload=False, **kwargs):
     output_dir = f'{pretrained_weights}-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
-    train_df, test_df = load_datasets(data_dir=data_dir, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
-    train(train_df, test_df, pretrained_weights, output_dir, epochs, learning_rate)
+    train_df, test_df = pd.read_csv(Path(data_dir, 'train.csv')), pd.read_csv(Path(data_dir, 'test.csv'))
+    train_ds = ParaphrasedDataset(train_df, pretrained_weights, with_bart_aug=with_bart_aug, with_t5_aug=with_t5_aug)
+    test_ds = ParaphrasedDataset(test_df, pretrained_weights)
+    train(train_ds, test_ds, pretrained_weights, output_dir, epochs, learning_rate, upload=upload)

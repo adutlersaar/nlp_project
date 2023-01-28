@@ -14,7 +14,7 @@ import copy
 import numpy as np
 from tqdm.auto import tqdm
 
-from load_data import load_datasets
+from paraphrase.paraphrased_dataset import ParaphrasedDataset
 from train_model import train
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -463,18 +463,20 @@ def run_attack(df, mlm_path, tgt_path, output_path='bertattack_output.json', num
     dump_features(features_output, output_path)
 
 
-def load_and_attack(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, use_bpe=False, epochs=5, learning_rate=1e-5, **kwargs):
+def load_and_attack(pretrained_weights, data_dir='data', with_bart_aug=False, with_t5_aug=False, use_bpe=False, epochs=5, learning_rate=1e-5, upload=False, **kwargs):
     tgt_path = f'{pretrained_weights}-fine-tuned-{data_dir}-{"with_bart" if with_bart_aug else "no_bart"}-{"with_t5" if with_t5_aug else "no_t5"}'
     output_dir = f'{tgt_path}-{"with_bpe" if use_bpe else "no_bpe"}'
     adv_data_path = Path(data_dir, f'{output_dir}-bertattack.json')
     if not adv_data_path.exists():
         train_df = pd.read_csv(Path(data_dir, 'train.csv'))
         run_attack(train_df, pretrained_weights, tgt_path, output_path=str(adv_data_path), use_bpe=use_bpe)
-    adv_train(data_dir, str(adv_data_path), pretrained_weights=tgt_path, output_dir=f'{output_dir}-adv-trained', epochs=epochs, learning_rate=learning_rate)
+    adv_train(data_dir, str(adv_data_path), pretrained_weights=tgt_path, output_dir=f'{output_dir}-adv-trained', epochs=epochs, learning_rate=learning_rate, upload=upload)
 
 
-def adv_train(data_dir, adv_data_path, pretrained_weights, output_dir, epochs, learning_rate):
+def adv_train(data_dir, adv_data_path, pretrained_weights, output_dir, epochs, learning_rate, upload):
     adv_train_df = pd.read_json(adv_data_path)
     adv_train_df = adv_train_df[adv_train_df['success'] > 2][['label', 'adv']].rename(columns={'adv': 'text'})
     test_df = pd.read_csv(Path(data_dir, 'test.csv'))
-    train(adv_train_df, test_df, pretrained_weights, output_dir=output_dir, epochs=epochs, learning_rate=learning_rate)
+    adv_train_ds = ParaphrasedDataset(adv_train_df, pretrained_weights)
+    test_ds = ParaphrasedDataset(test_df, pretrained_weights)
+    train(adv_train_ds, test_ds, pretrained_weights, output_dir=output_dir, epochs=epochs, learning_rate=learning_rate, upload=upload)
