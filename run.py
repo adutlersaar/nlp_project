@@ -40,7 +40,7 @@ def run():
     parser_bertattack.add_argument('--use-bpe', action='store_true')
     parser_bertattack.add_argument('--epochs', type=int, default=5)
     parser_bertattack.add_argument('--learning-rate', type=float, default=1e-5)
-    parser_train.add_argument('--upload', action='store_true')
+    parser_bertattack.add_argument('--upload', action='store_true')
 
     parser_plot = subparsers.add_parser('plot_roc')
     parser_plot.set_defaults(func=plot_roc)
