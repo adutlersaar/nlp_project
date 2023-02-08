@@ -41,9 +41,9 @@ def run():
     parser_plot.set_defaults(func=plot_roc)
     parser_plot.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
 
-    parser_plot = subparsers.add_parser('bertattack_statistics')
-    parser_plot.set_defaults(func=save_bertattack_statistics)
-    parser_plot.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
+    parser_bertattack_statistics = subparsers.add_parser('bertattack_statistics')
+    parser_bertattack_statistics.set_defaults(func=save_bertattack_statistics)
+    parser_bertattack_statistics.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
 
     parser_upload = subparsers.add_parser('upload')
     parser_upload.set_defaults(func=upload_model)

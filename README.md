@@ -2,6 +2,8 @@
 
 - Every functionality in this project can be accessed from run.py
 - We used Weights & Biases platform to log our experiments.
+- The raw & preprocessed datasets, the bertattack results (adversarial data), and the roc plot, are provided in "data.zip"
+- "data.zip" can be downloaded from: https://drive.google.com/file/d/1ku2XMjs7cf5O0oqJ4okmoXLIjO3Bykj3/view?usp=sharing
 
 ## BertAttack - https://github.com/LinyangLee/BERT-Attack
 - The code for BERTATTACK was copied from the mentioned repository, and modified for our needs.
@@ -18,17 +20,11 @@
 
 ## Train
 
-- python run.py --data-dir data train
-- python run.py --data-dir data train --with-bart-aug
-- python run.py --data-dir data train --with-t5-aug
-- python run.py --data-dir data train --with-bart-aug --with-t5-aug
+- python run.py --data-dir data train \[--with-bart-aug\] \[--with-t5-aug\]
 
 ## BertAttack (Attack & Fine-Tune)
 
-- python run.py --data-dir data bertattack
-- python run.py --data-dir data bertattack --with-bart-aug
-- python run.py --data-dir data bertattack --with-t5-aug
-- python run.py --data-dir data bertattack --with-bart-aug --with-t5-aug
+- python run.py --data-dir data bertattack \[--with-bart-aug\] \[--with-t5-aug\]
 
 ## Utilities (used for analysis, not required at training)
 
