@@ -1,6 +1,7 @@
 import argparse
 
 from bertattack import load_and_attack
+from bertattack_statistics import save_bertattack_statistics
 from paraphrase import PARAPHRASERS
 from train_model import load_and_train
 from augment_dataset import augment_dataset
@@ -45,6 +46,11 @@ def run():
     parser_plot = subparsers.add_parser('plot_roc')
     parser_plot.set_defaults(func=plot_roc)
     parser_plot.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
+
+    parser_plot = subparsers.add_parser('bertattack_statistics')
+    parser_plot.set_defaults(func=save_bertattack_statistics)
+    parser_plot.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
+    parser.add_argument('--data-dir', type=str, default='data')
 
     parser_upload = subparsers.add_parser('upload')
     parser_upload.set_defaults(func=upload_model)
