@@ -2,6 +2,7 @@
 
 - Every functionality in this project can be accessed from run.py
 - We used Weights & Biases platform to log our experiments.
+- We used BGU's GPU Cluster to run the experiments.
 - The raw & preprocessed datasets, the bertattack results (adversarial data), and the roc plot, are provided in "data.zip"
 - "data.zip" can be downloaded from: https://drive.google.com/file/d/1ku2XMjs7cf5O0oqJ4okmoXLIjO3Bykj3/view?usp=sharing
 
