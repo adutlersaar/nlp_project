@@ -2,9 +2,7 @@ import argparse
 
 from bertattack import load_and_attack
 from bertattack_statistics import save_bertattack_statistics
-from paraphrase import PARAPHRASERS
 from train_model import load_and_train
-from augment_dataset import augment_dataset
 from preprocess_dataset import preprocess_dataset
 from plot import plot_roc
 from upload_to_hub import upload_locally_saved_models, upload_model
@@ -19,10 +17,6 @@ def run():
     parser_preprocess = subparsers.add_parser('preprocess')
     parser_preprocess.set_defaults(func=preprocess_dataset)
     parser_preprocess.add_argument('--test-size', type=float, default=0.2)
-
-    parser_augment = subparsers.add_parser('augment')
-    parser_augment.set_defaults(func=augment_dataset)
-    parser_augment.add_argument('--paraphraser-name', choices=PARAPHRASERS, required=True)
 
     parser_train = subparsers.add_parser('train')
     parser_train.set_defaults(func=load_and_train)
@@ -50,7 +44,6 @@ def run():
     parser_plot = subparsers.add_parser('bertattack_statistics')
     parser_plot.set_defaults(func=save_bertattack_statistics)
     parser_plot.add_argument('--pretrained-weights', type=str, default='bert-base-uncased')
-    parser.add_argument('--data-dir', type=str, default='data')
 
     parser_upload = subparsers.add_parser('upload')
     parser_upload.set_defaults(func=upload_model)

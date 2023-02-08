@@ -9,11 +9,6 @@
 
 - python run.py --data-dir data preprocess --test-size 0.2
 
-## Augmentations
-
-- python run.py --data-dir data augment --paraphraser-name bart
-- python run.py --data-dir data augment --paraphraser-name t5
-
 ## Train
 
 - python run.py --data-dir data train
@@ -21,13 +16,13 @@
 - python run.py --data-dir data train --with-t5-aug
 - python run.py --data-dir data train --with-bart-aug --with-t5-aug
 
-## BertAttack
+## BertAttack (Attack & Fine-Tune)
 
 - python run.py --data-dir data bertattack
 - python run.py --data-dir data bertattack --with-bart-aug
 - python run.py --data-dir data bertattack --with-t5-aug
 - python run.py --data-dir data bertattack --with-bart-aug --with-t5-aug
 
-## Fine-tune on BertAttack
+## BertAttack Statistics
 
-- TBD
+- python run.py --data-dir data bertattack_statistics
